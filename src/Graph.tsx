@@ -14,7 +14,7 @@ interface IProps {
  * Perspective library adds load to HTMLElement prototype.
  * This interface acts as a wrapper for Typescript compiler.
  */
-interface PerspectiveViewerElement {
+interface PerspectiveViewerElement extends HTMLElement {
   load: (table: Table) => void,
 }
 
@@ -32,7 +32,7 @@ class Graph extends Component<IProps, {}> {
 
   componentDidMount() {
     // Get element to attach the table from the DOM.
-    const elem: PerspectiveViewerElement = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
+    const elem = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
 
     const schema = {
       stock: 'string',
@@ -45,9 +45,12 @@ class Graph extends Component<IProps, {}> {
       this.table = window.perspective.worker().table(schema);
     }
     if (this.table) {
-      // Load the `table` in the `<perspective-viewer>` DOM reference.
+      elem.setAttribute('view', 'ly_line');
+      elem.setAttribute('column-pivots', '["stock"]');
+      elem.setAttribute('row-pivots', '["timestamp"]');
+      elem.setAttribute('columns', "[top_ask_price]");
+      elem.setAttribute('aggregates', '{"stock":"distinct count", "top_ask_price":"avg","topbidprice":"avg", "timestamp":"distinct count"}'); 
 
-      // Add more Perspective configurations here.
       elem.load(this.table);
     }
   }
@@ -58,6 +61,7 @@ class Graph extends Component<IProps, {}> {
       // As part of the task, you need to fix the way we update the data props to
       // avoid inserting duplicated entries into Perspective table again.
       this.table.update(this.props.data.map((el: any) => {
+      
         // Format the data from ServerRespond to the schema
         return {
           stock: el.stock,
